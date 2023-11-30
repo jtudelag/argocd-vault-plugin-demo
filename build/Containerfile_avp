@@ -3,15 +3,31 @@ FROM registry.access.redhat.com/ubi8
 # Switch to root for the ability to perform install
 USER root
 
-# Install tools needed for your repo-server to retrieve & decrypt secrets, render manifests
-# dnf install -y ...
+# Install git as per AVP docs, just in case: https://argocd-vault-plugin.readthedocs.io/en/stable/usage/#running-argocd-vault-plugin-in-a-sidecar-container
+RUN dnf install -y git
 
-# Install the AVP plugin (as root so we can copy to /usr/local/bin)
+#TODO: Add the CA per AVP docs: https://argocd-vault-plugin.readthedocs.io/en/stable/usage/#running-argocd-vault-plugin-in-a-sidecar-container
+
+# Install the AVP plugin and other binaries (as root so we can copy to /usr/local/bin)
 ENV AVP_VERSION=1.17.0
-ENV BIN=argocd-vault-plugin
-RUN curl -L -o ${BIN} https://github.com/argoproj-labs/argocd-vault-plugin/releases/download/v${AVP_VERSION}/argocd-vault-plugin_${AVP_VERSION}_linux_amd64
-RUN chmod +x ${BIN}
-RUN mv ${BIN} /usr/local/bin
+ENV HELM_VERSION=3.12.1
+ENV KUSTOMIZE_VERSION=5.2.1
+ENV BIN_FOLDER=/usr/local/bin
+# AVP
+RUN curl -L -o ${BIN_FOLDER}/argocd-vault-plugin https://github.com/argoproj-labs/argocd-vault-plugin/releases/download/v${AVP_VERSION}/argocd-vault-plugin_${AVP_VERSION}_linux_amd64
+RUN chmod +x ${BIN_FOLDER}/argocd-vault-plugin
+# HELM
+RUN curl -L -o ${BIN_FOLDER}/helm https://developers.redhat.com/content-gateway/file/pub/openshift-v4/clients/helm/${HELM_VERSION}/helm-linux-amd64
+RUN chmod +x ${BIN_FOLDER}/helm
+# Kustomize
+RUN curl -L -o /tmp/kustomize.tar.gz https://github.com/kubernetes-sigs/kustomize/releases/download/kustomize/v${KUSTOMIZE_VERSION}/kustomize_v${KUSTOMIZE_VERSION}_linux_amd64.tar.gz && \
+    tar xvfz /tmp/kustomize.tar.gz --directory ${BIN_FOLDER}/ kustomize && \
+    rm -rf /tmp/kustomize.tar.gz
+RUN chmod +x ${BIN_FOLDER}/kustomize
+
+LABEL HELM_VERSION ${HELM_VERSION}
+LABEL KUSTOMIZE_VERSION ${KUSTOMIZE_VERSION}
+LABEL ARGOCD_VAULT_PLUGIN_VERSION ${AVP_VERSION}
 
 # Switch back to non-root user
 USER 999
