@@ -107,8 +107,6 @@ time="2023-12-04T15:23:51Z" level=info msg="Alloc=7852 TotalAlloc=16491 Sys=2802
 
 # AVP Demo with Delinea Secret Server
 
-
-
 Here we are going to show how to make AVP work with Delinea Secret Server (DSS).
 
 ## Deploy OpenShift GitOps Operator
@@ -122,14 +120,14 @@ using username and password authentication. Unfortunately, AVP does not support
 token based authentication for [DSS](https://argocd-vault-plugin.readthedocs.io/en/stable/backends/#delinea-secret-server).
 
 2. Now create a secret that the user has permissions to read. For the shake of this
-demo, create a simple "Usernam/Password" secret and populate it with some values.
+demo, create a simple "Username/Password" secret and populate it with some values.
 
 3. Delinea Secret Server only allows to reference secrets by their ID, so note the ID
 of your secret for later.
 
-## Build the SidecarContainerImage
+## Build the Sidecar Container Image
 
-1. Now clone this repo, and go to the `buld/` folder.
+1. Now clone this repo, and go to the `build/` folder.
 
 ```bash
 cd https://github.com/jtudelag/argocd-vault-plugin-demo.git
@@ -139,7 +137,6 @@ cd build/
 2. Build the container image using podman
 ```bash
 podman build -f Containerfile_avp -t myregistry/myrepo/argocd-avp-plugin:1.17.0
-
 ```
 
 3. Push it to your registry
@@ -204,8 +201,8 @@ kustomize build . | oc apply -f-
 https://github.com/<YOUR_GITHUB_USER>/argocd-vault-plugin-demo.git
 ```
 
-2. Change secrets ID in the secrets example folder. Yoi can look for all the ocurrences
-anc hange those.
+2. Change secrets ID in the secrets example folder. You can look for all the ocurrences
+an change those with the right ID.
 ```bash
 cd secrets_examples/
 grep -R 'avp.kubernetes.io/path' *
@@ -215,7 +212,7 @@ kustomize_with_helm/helm_secret/templates/helm-secret.yaml:    avp.kubernetes.io
 simple/secret-example.yaml:    avp.kubernetes.io/path: '2'
 ```
 
-3. Now go to the argocd-apps folder and change the repoURL with your repo URL.
+3. Now go to the argocd-apps folder and change the repoURL with the URL of your forked repo.
 ```bash
 grep repoURL *
 app-helm-secret.yaml:    repoURL: 'https://github.com/jtudelag/argocd-vault-plugin-demo.git'
